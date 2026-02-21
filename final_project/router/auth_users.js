@@ -9,16 +9,16 @@ let users = [];
 // Check if username already exists
 const isValid = (username) => {
   return users.some(user => user.username === username);
-}
+};
 
 // Check if username and password match
 const authenticatedUser = (username, password) => {
-  return users.some(user => 
+  return users.some(user =>
     user.username === username && user.password === password
   );
-}
+};
 
-// ===================== LOGIN =====================
+// ================= LOGIN =================
 
 regd_users.post("/login", (req, res) => {
 
@@ -50,16 +50,16 @@ regd_users.post("/login", (req, res) => {
 
 });
 
-// ===================== ADD / MODIFY REVIEW =====================
+// ================= ADD / MODIFY REVIEW =================
 
 regd_users.put("/auth/review/:isbn", (req, res) => {
 
   const username = req.session.authorization.username;
   const isbn = req.params.isbn;
-  const review = req.body.review;
+  const review = req.query.review;
 
   if (!review) {
-    return res.status(400).json({ message: "Review text required" });
+    return res.status(400).json({ message: "Review is required" });
   }
 
   const book = books[isbn];
@@ -68,10 +68,40 @@ regd_users.put("/auth/review/:isbn", (req, res) => {
     return res.status(404).json({ message: "Book not found" });
   }
 
-  // Add or update review
+  // Add or modify review
   book.reviews[username] = review;
 
-  return res.status(200).json({ message: "Review added/updated successfully" });
+  return res.status(200).json({
+    message: "Review added/modified successfully",
+    reviews: book.reviews
+  });
+
+});
+
+// ================= DELETE REVIEW =================
+
+regd_users.delete("/auth/review/:isbn", (req, res) => {
+
+  const username = req.session.authorization.username;
+  const isbn = req.params.isbn;
+
+  const book = books[isbn];
+
+  if (!book) {
+    return res.status(404).json({ message: "Book not found" });
+  }
+
+  if (!book.reviews[username]) {
+    return res.status(404).json({ message: "No review found for this user" });
+  }
+
+  // Delete only logged-in user's review
+  delete book.reviews[username];
+
+  return res.status(200).json({
+    message: "Review deleted successfully",
+    reviews: book.reviews
+  });
 
 });
 
