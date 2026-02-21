@@ -6,12 +6,12 @@ const regd_users = express.Router();
 
 let users = [];
 
-// Check if username already exists
+// ================= CHECK USERNAME EXISTS =================
 const isValid = (username) => {
   return users.some(user => user.username === username);
 };
 
-// Check if username and password match
+// ================= AUTHENTICATE USER =================
 const authenticatedUser = (username, password) => {
   return users.some(user =>
     user.username === username && user.password === password
@@ -19,7 +19,6 @@ const authenticatedUser = (username, password) => {
 };
 
 // ================= LOGIN =================
-
 regd_users.post("/login", (req, res) => {
 
   const username = req.body.username;
@@ -42,7 +41,7 @@ regd_users.post("/login", (req, res) => {
       username
     };
 
-    return res.status(200).json({ message: "User successfully logged in" });
+    return res.status(200).json({ message: "Login successful!" });
 
   } else {
     return res.status(401).json({ message: "Invalid login credentials" });
@@ -51,12 +50,11 @@ regd_users.post("/login", (req, res) => {
 });
 
 // ================= ADD / MODIFY REVIEW =================
-
 regd_users.put("/auth/review/:isbn", (req, res) => {
 
   const username = req.session.authorization.username;
   const isbn = req.params.isbn;
-  const review = req.query.review;
+  const review = req.body.review;
 
   if (!review) {
     return res.status(400).json({ message: "Review is required" });
@@ -72,14 +70,13 @@ regd_users.put("/auth/review/:isbn", (req, res) => {
   book.reviews[username] = review;
 
   return res.status(200).json({
-    message: "Review added/modified successfully",
+    message: `Review added/modified successfully for ISBN ${isbn}`,
     reviews: book.reviews
   });
 
 });
 
 // ================= DELETE REVIEW =================
-
 regd_users.delete("/auth/review/:isbn", (req, res) => {
 
   const username = req.session.authorization.username;
@@ -99,7 +96,7 @@ regd_users.delete("/auth/review/:isbn", (req, res) => {
   delete book.reviews[username];
 
   return res.status(200).json({
-    message: "Review deleted successfully",
+    message: `Review deleted successfully for ISBN ${isbn}`,
     reviews: book.reviews
   });
 
